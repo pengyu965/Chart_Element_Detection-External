@@ -1,0 +1,567 @@
+2024-10-22 16:22:42,965 - mmdet - INFO - Environment info:
+------------------------------------------------------------
+sys.platform: linux
+Python: 3.8.20 (default, Oct  3 2024, 15:24:27) [GCC 11.2.0]
+CUDA available: True
+GPU 0,1,2,3,4,5,6,7: NVIDIA RTX A6000
+CUDA_HOME: /usr/local/cuda-12.2
+NVCC: Cuda compilation tools, release 12.2, V12.2.140
+GCC: gcc (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0
+PyTorch: 1.13.1
+PyTorch compiling details: PyTorch built with:
+  - GCC 9.3
+  - C++ Version: 201402
+  - Intel(R) oneAPI Math Kernel Library Version 2023.1-Product Build 20230303 for Intel(R) 64 architecture applications
+  - Intel(R) MKL-DNN v2.6.0 (Git Hash 52b5f107dd9cf10910aaa19cb47f3abf9b349815)
+  - OpenMP 201511 (a.k.a. OpenMP 4.5)
+  - LAPACK is enabled (usually provided by MKL)
+  - NNPACK is enabled
+  - CPU capability usage: AVX2
+  - CUDA Runtime 11.7
+  - NVCC architecture flags: -gencode;arch=compute_37,code=sm_37;-gencode;arch=compute_50,code=sm_50;-gencode;arch=compute_60,code=sm_60;-gencode;arch=compute_61,code=sm_61;-gencode;arch=compute_70,code=sm_70;-gencode;arch=compute_75,code=sm_75;-gencode;arch=compute_80,code=sm_80;-gencode;arch=compute_86,code=sm_86;-gencode;arch=compute_37,code=compute_37
+  - CuDNN 8.5
+  - Magma 2.6.1
+  - Build settings: BLAS_INFO=mkl, BUILD_TYPE=Release, CUDA_VERSION=11.7, CUDNN_VERSION=8.5.0, CXX_COMPILER=/opt/rh/devtoolset-9/root/usr/bin/c++, CXX_FLAGS= -fabi-version=11 -Wno-deprecated -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -fopenmp -DNDEBUG -DUSE_KINETO -DUSE_FBGEMM -DUSE_QNNPACK -DUSE_PYTORCH_QNNPACK -DUSE_XNNPACK -DSYMBOLICATE_MOBILE_DEBUG_HANDLE -DEDGE_PROFILER_USE_KINETO -O2 -fPIC -Wno-narrowing -Wall -Wextra -Werror=return-type -Werror=non-virtual-dtor -Wno-missing-field-initializers -Wno-type-limits -Wno-array-bounds -Wno-unknown-pragmas -Wunused-local-typedefs -Wno-unused-parameter -Wno-unused-function -Wno-unused-result -Wno-strict-overflow -Wno-strict-aliasing -Wno-error=deprecated-declarations -Wno-stringop-overflow -Wno-psabi -Wno-error=pedantic -Wno-error=redundant-decls -Wno-error=old-style-cast -fdiagnostics-color=always -faligned-new -Wno-unused-but-set-variable -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math -Werror=format -Werror=cast-function-type -Wno-stringop-overflow, LAPACK_INFO=mkl, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, PERF_WITH_AVX512=1, TORCH_VERSION=1.13.1, USE_CUDA=ON, USE_CUDNN=ON, USE_EXCEPTION_PTR=1, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_MKL=ON, USE_MKLDNN=ON, USE_MPI=OFF, USE_NCCL=ON, USE_NNPACK=ON, USE_OPENMP=ON, USE_ROCM=OFF, 
+
+TorchVision: 0.14.1
+OpenCV: 4.10.0
+MMCV: 1.7.2
+MMCV Compiler: GCC 9.3
+MMCV CUDA Compiler: 11.7
+MMDetection: 2.28.1+HEAD
+------------------------------------------------------------
+
+2024-10-22 16:22:46,213 - mmdet - INFO - Distributed training: False
+2024-10-22 16:22:49,319 - mmdet - INFO - Config:
+model = dict(
+    type='CascadeRCNN',
+    backbone=dict(
+        type='SwinTransformer',
+        embed_dims=96,
+        depths=[2, 2, 6, 2],
+        num_heads=[3, 6, 12, 24],
+        window_size=7,
+        mlp_ratio=4,
+        qkv_bias=True,
+        qk_scale=None,
+        drop_rate=0.0,
+        attn_drop_rate=0.0,
+        drop_path_rate=0.2,
+        patch_norm=True,
+        out_indices=(0, 1, 2, 3),
+        with_cp=False,
+        convert_weights=True,
+        init_cfg=dict(
+            type='Pretrained',
+            checkpoint=
+            'https://github.com/SwinTransformer/storage/releases/download/v1.0.0/swin_tiny_patch4_window7_224.pth'
+        )),
+    neck=dict(
+        type='FPN',
+        in_channels=[96, 192, 384, 768],
+        out_channels=256,
+        num_outs=5),
+    rpn_head=dict(
+        type='RPNHead',
+        in_channels=256,
+        feat_channels=256,
+        anchor_generator=dict(
+            type='AnchorGenerator',
+            scales=[8],
+            ratios=[0.5, 1.0, 2.0],
+            strides=[4, 8, 16, 32, 64]),
+        bbox_coder=dict(
+            type='DeltaXYWHBBoxCoder',
+            target_means=[0.0, 0.0, 0.0, 0.0],
+            target_stds=[1.0, 1.0, 1.0, 1.0]),
+        loss_cls=dict(
+            type='CrossEntropyLoss', use_sigmoid=True, loss_weight=1.0),
+        loss_bbox=dict(
+            type='SmoothL1Loss', beta=0.1111111111111111, loss_weight=1.0)),
+    roi_head=dict(
+        type='CascadeRoIHead_LGF',
+        num_stages=3,
+        stage_loss_weights=[1, 1, 0.5],
+        bbox_roi_extractor=dict(
+            type='SingleRoIExtractor',
+            roi_layer=dict(type='RoIAlign', output_size=7, sampling_ratio=0),
+            out_channels=256,
+            featmap_strides=[4, 8, 16, 32]),
+        bbox_head=[
+            dict(
+                type='Shared3FCBBoxHead_with_BboxEncoding',
+                in_channels=256,
+                fc_out_channels=1024,
+                bbox_encoding_dim=512,
+                roi_feat_size=7,
+                num_classes=18,
+                bbox_coder=dict(
+                    type='DeltaXYWHBBoxCoder',
+                    target_means=[0.0, 0.0, 0.0, 0.0],
+                    target_stds=[0.1, 0.1, 0.2, 0.2]),
+                reg_class_agnostic=True,
+                loss_cls=dict(type='FocalLoss'),
+                loss_bbox=dict(
+                    type='BalancedL1Loss', beta=1.0, loss_weight=1.0)),
+            dict(
+                type='Shared3FCBBoxHead_with_BboxEncoding',
+                in_channels=256,
+                fc_out_channels=1024,
+                bbox_encoding_dim=512,
+                roi_feat_size=7,
+                num_classes=18,
+                bbox_coder=dict(
+                    type='DeltaXYWHBBoxCoder',
+                    target_means=[0.0, 0.0, 0.0, 0.0],
+                    target_stds=[0.05, 0.05, 0.1, 0.1]),
+                reg_class_agnostic=True,
+                loss_cls=dict(type='FocalLoss'),
+                loss_bbox=dict(
+                    type='BalancedL1Loss', beta=1.0, loss_weight=1.0)),
+            dict(
+                type='Shared3FCBBoxHead_with_BboxEncoding',
+                in_channels=256,
+                fc_out_channels=1024,
+                bbox_encoding_dim=512,
+                roi_feat_size=7,
+                num_classes=18,
+                bbox_coder=dict(
+                    type='DeltaXYWHBBoxCoder',
+                    target_means=[0.0, 0.0, 0.0, 0.0],
+                    target_stds=[0.033, 0.033, 0.067, 0.067]),
+                reg_class_agnostic=True,
+                loss_cls=dict(type='FocalLoss'),
+                loss_bbox=dict(
+                    type='BalancedL1Loss', beta=1.0, loss_weight=1.0))
+        ],
+        localglobal_fuser=dict(
+            type='LocalGlobal_Context_Fuser',
+            channels=256,
+            roi_size=7,
+            reduced_channels=256,
+            lg_merge_layer=dict(type='SELayer', channels=256)),
+        lgf_shared=False,
+        bbox_encoder=dict(
+            type='BboxEncoder',
+            n_layer=4,
+            n_head=4,
+            n_embd=512,
+            bbox_cord_dim=4,
+            bbox_max_num=1024,
+            embd_pdrop=0.1,
+            attn_pdrop=0.1),
+        bbox_encoder_shared=False),
+    train_cfg=dict(
+        rpn=dict(
+            assigner=dict(
+                type='MaxIoUAssigner',
+                pos_iou_thr=0.7,
+                neg_iou_thr=0.3,
+                min_pos_iou=0.3,
+                match_low_quality=True,
+                ignore_iof_thr=-1),
+            sampler=dict(
+                type='RandomSampler',
+                num=256,
+                pos_fraction=0.5,
+                neg_pos_ub=-1,
+                add_gt_as_proposals=False),
+            allowed_border=0,
+            pos_weight=-1,
+            debug=False),
+        rpn_proposal=dict(
+            nms_pre=2000,
+            max_per_img=2000,
+            nms=dict(type='nms', iou_threshold=0.7),
+            min_bbox_size=0),
+        rcnn=[
+            dict(
+                assigner=dict(
+                    type='MaxIoUAssigner',
+                    pos_iou_thr=0.5,
+                    neg_iou_thr=0.5,
+                    min_pos_iou=0.5,
+                    match_low_quality=False,
+                    ignore_iof_thr=-1),
+                sampler=dict(
+                    type='RandomSampler',
+                    num=512,
+                    pos_fraction=0.25,
+                    neg_pos_ub=-1,
+                    add_gt_as_proposals=True),
+                pos_weight=-1,
+                debug=False),
+            dict(
+                assigner=dict(
+                    type='MaxIoUAssigner',
+                    pos_iou_thr=0.6,
+                    neg_iou_thr=0.6,
+                    min_pos_iou=0.6,
+                    match_low_quality=False,
+                    ignore_iof_thr=-1),
+                sampler=dict(
+                    type='RandomSampler',
+                    num=512,
+                    pos_fraction=0.25,
+                    neg_pos_ub=-1,
+                    add_gt_as_proposals=True),
+                pos_weight=-1,
+                debug=False),
+            dict(
+                assigner=dict(
+                    type='MaxIoUAssigner',
+                    pos_iou_thr=0.7,
+                    neg_iou_thr=0.7,
+                    min_pos_iou=0.7,
+                    match_low_quality=False,
+                    ignore_iof_thr=-1),
+                sampler=dict(
+                    type='RandomSampler',
+                    num=512,
+                    pos_fraction=0.25,
+                    neg_pos_ub=-1,
+                    add_gt_as_proposals=True),
+                pos_weight=-1,
+                debug=False)
+        ]),
+    test_cfg=dict(
+        rpn=dict(
+            nms_pre=1000,
+            max_per_img=1000,
+            nms=dict(type='nms', iou_threshold=0.7),
+            min_bbox_size=0),
+        rcnn=dict(
+            score_thr=0.0,
+            nms=dict(type='nms', iou_threshold=0.7),
+            max_per_img=200)))
+dataset_type = 'CocoDataset'
+data_root = 'data/coco/'
+img_norm_cfg = dict(
+    mean=[216.45, 212.36, 206.76], std=[55.82, 56.04, 55.56], to_rgb=True)
+train_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(type='LoadAnnotations', with_bbox=True),
+    dict(
+        type='AutoAugment',
+        policies=[[{
+            'type':
+            'Resize',
+            'img_scale': [(480, 1333), (512, 1333), (544, 1333), (576, 1333),
+                          (608, 1333), (640, 1333), (672, 1333), (704, 1333),
+                          (736, 1333), (768, 1333), (800, 1333)],
+            'multiscale_mode':
+            'value',
+            'keep_ratio':
+            True
+        }],
+                  [{
+                      'type': 'Resize',
+                      'img_scale': [(400, 1333), (500, 1333), (600, 1333)],
+                      'multiscale_mode': 'value',
+                      'keep_ratio': True
+                  }, {
+                      'type': 'RandomCrop',
+                      'crop_type': 'absolute_range',
+                      'crop_size': (384, 600),
+                      'allow_negative_crop': True
+                  }, {
+                      'type':
+                      'Resize',
+                      'img_scale': [(480, 1333), (512, 1333), (544, 1333),
+                                    (576, 1333), (608, 1333), (640, 1333),
+                                    (672, 1333), (704, 1333), (736, 1333),
+                                    (768, 1333), (800, 1333)],
+                      'multiscale_mode':
+                      'value',
+                      'override':
+                      True,
+                      'keep_ratio':
+                      True
+                  }, {
+                      'type': 'PhotoMetricDistortion',
+                      'brightness_delta': 32,
+                      'contrast_range': (0.5, 1.5),
+                      'saturation_range': (0.5, 1.5),
+                      'hue_delta': 18
+                  }, {
+                      'type': 'MinIoURandomCrop',
+                      'min_ious': (0.4, 0.5, 0.6, 0.7, 0.8, 0.9),
+                      'min_crop_size': 0.3
+                  }, {
+                      'type':
+                      'CutOut',
+                      'n_holes': (5, 10),
+                      'cutout_shape': [(4, 4), (4, 8), (8, 4), (8, 8),
+                                       (16, 32), (32, 16), (32, 32), (32, 48),
+                                       (48, 32), (48, 48)]
+                  }]]),
+    dict(type='RandomFlip', flip_ratio=0.1),
+    dict(
+        type='Normalize',
+        mean=[216.45, 212.36, 206.76],
+        std=[55.82, 56.04, 55.56],
+        to_rgb=True),
+    dict(type='Pad', size_divisor=32),
+    dict(type='DefaultFormatBundle'),
+    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels'])
+]
+test_pipeline = [
+    dict(type='LoadImageFromFile', to_float32=True),
+    dict(
+        type='MultiScaleFlipAug',
+        img_scale=(1333, 800),
+        flip=False,
+        transforms=[
+            dict(type='Resize', keep_ratio=True),
+            dict(type='RandomFlip', flip_ratio=0.0),
+            dict(
+                type='Normalize',
+                mean=[216.45, 212.36, 206.76],
+                std=[55.82, 56.04, 55.56],
+                to_rgb=True),
+            dict(type='Pad', size_divisor=32),
+            dict(type='DefaultFormatBundle'),
+            dict(type='Collect', keys=['img'])
+        ])
+]
+data = dict(
+    samples_per_gpu=3,
+    workers_per_gpu=4,
+    train=dict(
+        type='CocoDataset',
+        ann_file='./data/pmc_2022/pmc_coco/element_detection/train.json',
+        img_prefix='./data/pmc_2022/pmc_coco/element_detection/train/',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(type='LoadAnnotations', with_bbox=True),
+            dict(
+                type='AutoAugment',
+                policies=[[{
+                    'type':
+                    'Resize',
+                    'img_scale': [(480, 1333), (512, 1333), (544, 1333),
+                                  (576, 1333), (608, 1333), (640, 1333),
+                                  (672, 1333), (704, 1333), (736, 1333),
+                                  (768, 1333), (800, 1333)],
+                    'multiscale_mode':
+                    'value',
+                    'keep_ratio':
+                    True
+                }],
+                          [{
+                              'type': 'Resize',
+                              'img_scale': [(400, 1333), (500, 1333),
+                                            (600, 1333)],
+                              'multiscale_mode': 'value',
+                              'keep_ratio': True
+                          }, {
+                              'type': 'RandomCrop',
+                              'crop_type': 'absolute_range',
+                              'crop_size': (384, 600),
+                              'allow_negative_crop': True
+                          }, {
+                              'type':
+                              'Resize',
+                              'img_scale': [(480, 1333), (512, 1333),
+                                            (544, 1333), (576, 1333),
+                                            (608, 1333), (640, 1333),
+                                            (672, 1333), (704, 1333),
+                                            (736, 1333), (768, 1333),
+                                            (800, 1333)],
+                              'multiscale_mode':
+                              'value',
+                              'override':
+                              True,
+                              'keep_ratio':
+                              True
+                          }, {
+                              'type': 'PhotoMetricDistortion',
+                              'brightness_delta': 32,
+                              'contrast_range': (0.5, 1.5),
+                              'saturation_range': (0.5, 1.5),
+                              'hue_delta': 18
+                          }, {
+                              'type': 'MinIoURandomCrop',
+                              'min_ious': (0.4, 0.5, 0.6, 0.7, 0.8, 0.9),
+                              'min_crop_size': 0.3
+                          }, {
+                              'type':
+                              'CutOut',
+                              'n_holes': (5, 10),
+                              'cutout_shape': [(4, 4), (4, 8), (8, 4), (8, 8),
+                                               (16, 32), (32, 16), (32, 32),
+                                               (32, 48), (48, 32), (48, 48)]
+                          }]]),
+            dict(type='RandomFlip', flip_ratio=0.1),
+            dict(
+                type='Normalize',
+                mean=[216.45, 212.36, 206.76],
+                std=[55.82, 56.04, 55.56],
+                to_rgb=True),
+            dict(type='Pad', size_divisor=32),
+            dict(type='DefaultFormatBundle'),
+            dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels'])
+        ],
+        classes=[
+            'x_title', 'y_title', 'plot_area', 'other', 'xlabel', 'ylabel',
+            'chart_title', 'x_tick', 'y_tick', 'legend_patch', 'legend_label',
+            'legend_title', 'legend_area', 'mark_label', 'value_label',
+            'y_axis_area', 'x_axis_area', 'tick_grouping'
+        ]),
+    val=dict(
+        type='CocoDataset',
+        ann_file='./data/pmc_2022/pmc_coco/element_detection/val.json',
+        img_prefix='./data/pmc_2022/pmc_coco/element_detection/val/',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(
+                type='MultiScaleFlipAug',
+                img_scale=(1333, 800),
+                flip=False,
+                transforms=[
+                    dict(type='Resize', keep_ratio=True),
+                    dict(type='RandomFlip'),
+                    dict(
+                        type='Normalize',
+                        mean=[123.675, 116.28, 103.53],
+                        std=[58.395, 57.12, 57.375],
+                        to_rgb=True),
+                    dict(type='Pad', size_divisor=32),
+                    dict(type='ImageToTensor', keys=['img']),
+                    dict(type='Collect', keys=['img'])
+                ])
+        ],
+        classes=[
+            'x_title', 'y_title', 'plot_area', 'other', 'xlabel', 'ylabel',
+            'chart_title', 'x_tick', 'y_tick', 'legend_patch', 'legend_label',
+            'legend_title', 'legend_area', 'mark_label', 'value_label',
+            'y_axis_area', 'x_axis_area', 'tick_grouping'
+        ]),
+    test=dict(
+        type='CocoDataset',
+        ann_file='./data/pmc_2022/pmc_coco/element_detection/split3_test.json',
+        img_prefix='./data/pmc_2022/pmc_coco/element_detection/split3_test/',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(
+                type='MultiScaleFlipAug',
+                img_scale=(1333, 800),
+                flip=False,
+                transforms=[
+                    dict(type='Resize', keep_ratio=True),
+                    dict(type='RandomFlip'),
+                    dict(
+                        type='Normalize',
+                        mean=[123.675, 116.28, 103.53],
+                        std=[58.395, 57.12, 57.375],
+                        to_rgb=True),
+                    dict(type='Pad', size_divisor=32),
+                    dict(type='ImageToTensor', keys=['img']),
+                    dict(type='Collect', keys=['img'])
+                ])
+        ],
+        classes=[
+            'x_title', 'y_title', 'plot_area', 'other', 'xlabel', 'ylabel',
+            'chart_title', 'x_tick', 'y_tick', 'legend_patch', 'legend_label',
+            'legend_title', 'legend_area', 'mark_label', 'value_label',
+            'y_axis_area', 'x_axis_area', 'tick_grouping'
+        ]))
+evaluation = dict(interval=1, metric=['bbox'])
+optimizer = dict(
+    type='AdamW',
+    lr=0.0002,
+    betas=(0.9, 0.999),
+    weight_decay=0.05,
+    paramwise_cfg=dict(
+        custom_keys=dict(
+            absolute_pos_embed=dict(decay_mult=0.0),
+            relative_position_bias_table=dict(decay_mult=0.0),
+            norm=dict(decay_mult=0.0))))
+optimizer_config = dict(grad_clip=None)
+lr_config = dict(
+    policy='step',
+    warmup='linear',
+    warmup_iters=500,
+    warmup_ratio=0.001,
+    step=[8, 11])
+runner = dict(type='EpochBasedRunner', max_epochs=150)
+checkpoint_config = dict(interval=1)
+log_config = dict(interval=50, hooks=[dict(type='TextLoggerHook')])
+custom_hooks = [dict(type='NumClassCheckHook')]
+dist_params = dict(backend='nccl')
+log_level = 'INFO'
+load_from = None
+resume_from = None
+workflow = [('train', 1)]
+opencv_num_threads = 0
+mp_start_method = 'fork'
+auto_scale_lr = dict(enable=False, base_batch_size=16)
+pretrained = 'https://github.com/SwinTransformer/storage/releases/download/v1.0.0/swin_tiny_patch4_window7_224.pth'
+classes = [
+    'x_title', 'y_title', 'plot_area', 'other', 'xlabel', 'ylabel',
+    'chart_title', 'x_tick', 'y_tick', 'legend_patch', 'legend_label',
+    'legend_title', 'legend_area', 'mark_label', 'value_label', 'y_axis_area',
+    'x_axis_area', 'tick_grouping'
+]
+auto_resume = False
+gpu_ids = [0]
+work_dir = './work_dirs/cascade_rcnn_swin-t_fpn_LGF_VCE_PCE_coco_focalsmoothloss'
+
+2024-10-22 16:22:49,319 - mmdet - INFO - Set random seed to 1455491102, deterministic: False
+2024-10-22 16:22:49,913 - mmdet.models.roi_heads.bbox_encoding_transformer - INFO - number of parameters: 1.287475e+07
+2024-10-22 16:22:49,963 - mmdet.models.roi_heads.bbox_encoding_transformer - INFO - number of parameters: 1.287475e+07
+2024-10-22 16:22:50,010 - mmdet.models.roi_heads.bbox_encoding_transformer - INFO - number of parameters: 1.287475e+07
+2024-10-22 16:22:50,031 - mmdet - INFO - load checkpoint from http path: https://github.com/SwinTransformer/storage/releases/download/v1.0.0/swin_tiny_patch4_window7_224.pth
+2024-10-22 16:22:56,458 - mmdet - INFO - Automatic scaling of learning rate (LR) has been disabled.
+2024-10-22 16:22:56,709 - mmdet - INFO - Start running, host: pyan4@deepbull8, work_dir: /data_local3/pyan4/Workspace/Chart_Element_Detection-External/work_dirs/cascade_rcnn_swin-t_fpn_LGF_VCE_PCE_coco_focalsmoothloss
+2024-10-22 16:22:56,709 - mmdet - INFO - Hooks will be executed in the following order:
+before_run:
+(VERY_HIGH   ) StepLrUpdaterHook                  
+(NORMAL      ) CheckpointHook                     
+(LOW         ) EvalHook                           
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_train_epoch:
+(VERY_HIGH   ) StepLrUpdaterHook                  
+(NORMAL      ) NumClassCheckHook                  
+(LOW         ) IterTimerHook                      
+(LOW         ) EvalHook                           
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_train_iter:
+(VERY_HIGH   ) StepLrUpdaterHook                  
+(LOW         ) IterTimerHook                      
+(LOW         ) EvalHook                           
+ -------------------- 
+after_train_iter:
+(ABOVE_NORMAL) OptimizerHook                      
+(NORMAL      ) CheckpointHook                     
+(LOW         ) IterTimerHook                      
+(LOW         ) EvalHook                           
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+after_train_epoch:
+(NORMAL      ) CheckpointHook                     
+(LOW         ) EvalHook                           
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_val_epoch:
+(NORMAL      ) NumClassCheckHook                  
+(LOW         ) IterTimerHook                      
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_val_iter:
+(LOW         ) IterTimerHook                      
+ -------------------- 
+after_val_iter:
+(LOW         ) IterTimerHook                      
+ -------------------- 
+after_val_epoch:
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+after_run:
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+2024-10-22 16:22:56,710 - mmdet - INFO - workflow: [('train', 1)], max: 150 epochs
+2024-10-22 16:22:56,710 - mmdet - INFO - Checkpoints will be saved to /data_local3/pyan4/Workspace/Chart_Element_Detection-External/work_dirs/cascade_rcnn_swin-t_fpn_LGF_VCE_PCE_coco_focalsmoothloss by HardDiskBackend.
+2024-10-22 16:24:09,944 - mmdet - INFO - Epoch [1][50/1685]	lr: 1.978e-05, eta: 4 days, 6:48:16, time: 1.465, data_time: 0.084, memory: 14894, loss_rpn_cls: 0.6343, loss_rpn_bbox: 0.2607, s0.loss_cls: 1.3925, s0.acc: 69.4440, s0.loss_bbox: 0.2406, s1.loss_cls: 1.4121, s1.acc: 76.8464, s1.loss_bbox: 0.1445, s2.loss_cls: 0.6808, s2.acc: 89.5612, s2.loss_bbox: 0.0213, loss: 4.7867
